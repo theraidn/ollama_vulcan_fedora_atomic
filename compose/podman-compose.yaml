@@ -1,0 +1,17 @@
+version: '3.8'
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: ${RESTART_POLICY:-unless-stopped}
+    ports:
+      - "127.0.0.1:11434:11434" 
+    volumes:
+      - ${OLLAMA_DATA_PATH}:/root/.ollama:Z 
+    environment:
+      OLLAMA_VULKAN: "true"
+      OLLAMA_GPU: vulkan
+    devices:
+      - "/dev/dri:/dev/dri"
+    security_opt:
+      - label=disable
