@@ -38,23 +38,13 @@ This repository provides a `podman-compose` configuration to run Ollama with Vul
     # Container restart policy. Options: "no", "on-failure", "always", "unless-stopped".
     # RESTART_POLICY=unless-stopped
 
-    # User ID (UID) and Group ID (GID) for the Ollama container process.
-    # This should typically match your host user's UID and GID to ensure proper
-    # permissions for the mounted volume.
-    # You can find your UID and GID by running 'id -u' and 'id -g' in your terminal.
-    # UID=1000
-    # GID=1000
-
     # Absolute path on the host system where Ollama will store its models and data.
     # OLLAMA_DATA_PATH=/path/to/your/ollama_data
-    # Name of the Ollama container.
-    # CONTAINER_NAME=ollama-vulkan
     ```
-    **Important**: Ensure `UID` and `GID` match your host user's IDs if you encounter permission errors.
 
 3.  **Make Scripts Executable**:
     ```bash
-    chmod +x start_ollama.sh stop_ollama.sh
+    chmod +x start_ollama.sh stop_ollama.sh pull_models.sh
     ```
 
 4.  **Start Ollama**:
@@ -64,18 +54,27 @@ This repository provides a `podman-compose` configuration to run Ollama with Vul
     ```
     You can check the container's status with `podman ps` or view its logs with `podman-compose -f compose/podman-compose.yaml logs -f ollama`.
 
-5.  **Interact with Ollama**:
-    Once started, you can pull and run models:
+5.  **Pull LLM Models**:
+    Use the `pull_models.sh` script to automatically download LLM models into your Ollama container:
     ```bash
-    ollama pull llama2 # If you have the Ollama CLI installed on your host
+    ./pull_models.sh
+    ```
+    This script pulls a predefined list of models (e.g., `codestral:22b`, `qwen3-coder:30b`, `deepseek-coder-v2:16`, `CodeGemma:latest`). You can customize the models by editing the `MODELS` array in the script.
+    
+    **Note**: Large models can take a significant amount of time to download depending on your network speed and model size. The script will display progress as it pulls each model.
+
+6.  **Interact with Ollama**:
+    Once started and models are pulled, you can run models from inside the container:
+    ```bash
+    podman exec ollama ollama run llama2
     ```
     Or, execute commands directly inside the container:
     ```bash
-    podman exec -it ollama-vulkan ollama pull llama2
+    podman exec ollama ollama list
     ```
-    Verify models are present on your host in the `OLLAMA_DATA_PATH` directory (e.g., `/home/ben/.ollama`).
+    Verify models are present on your host in the `OLLAMA_DATA_PATH` directory (e.g., `/home/$USER/.ollama`).
 
-6.  **Stop Ollama**:
+7.  **Stop Ollama**:
     ```bash
     ./stop_ollama.sh
     ```
@@ -83,7 +82,7 @@ This repository provides a `podman-compose` configuration to run Ollama with Vul
 ## Troubleshooting
 
 *   **`Error: mkdir /opt/ollama/blobs: permission denied`**:
-    This often indicates SELinux or file permission issues. The configuration includes the `:Z` flag on the volume mount and runs Ollama as your user (`UID:GID`) to mitigate this. Ensure your host `OLLAMA_DATA_PATH` (e.g., `/home/ben/.ollama`) is owned by your user (`chown $USER:$USER /home/ben/.ollama`) and has appropriate write permissions.
+    This often indicates SELinux or file permission issues. The configuration includes the `:Z` flag on the volume mount and runs Ollama as your user (`UID:GID`) to mitigate this. Ensure your host `OLLAMA_DATA_PATH` (e.g., `/home/$USER/.ollama`) is owned by your user (`chown $USER:$USER /home/$USER/.ollama`) and has appropriate write permissions.
 *   **`Error: ... address already in use`**:
     Another process on your host is using port `11434`. Ensure no other Ollama instance or service is running. The `start_ollama.sh` script attempts to stop/purge old containers, but manual intervention might be needed (`podman ps -a`, `podman stop <ID>`, `podman rm <ID>`).
 *   **Vulkan Issues**: Ensure your host system has the correct and up-to-date Vulkan drivers for your GPU. Verify Vulkan is working on your host system with tools like `vulkaninfo`.
