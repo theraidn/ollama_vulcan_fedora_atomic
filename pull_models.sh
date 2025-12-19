@@ -8,7 +8,7 @@ set -e
 MODELS=(
     "codestral:22b"
     "qwen3-coder:30b"
-    "deepseek-coder-v2:16"
+    "deepseek-coder-v2:16b"
     "CodeGemma:latest"
 )
 
