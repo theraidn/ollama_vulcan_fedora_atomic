@@ -6,10 +6,17 @@ set -e
 
 # Define models to pull
 MODELS=(
-    "codestral:22b"
-    "qwen3-coder:30b"
-    "deepseek-coder-v2:16b"
-    "CodeGemma:latest"
+    "qwen2.5-coder:14b-instruct"
+    "qwen2.5-coder:32b"
+    "qwen2.5-coder:0.5b"
+    "qwen2.5-coder:1.5b"
+    "qwen2.5-coder:7b"
+    "devstral-small-2:latest"
+    "codellama:34b"
+    "deepseek-r1:70b"
+    "codegemma:2b"
+    "gpt-oss:20b"
+    "gemma3n:e4b"
 )
 
 # Container name
